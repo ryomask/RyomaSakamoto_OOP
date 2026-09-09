@@ -1,52 +1,57 @@
 package com.ryoma.frontend;
 
-public class Player {
-    // Attributes / Fields
+import com.badlogic.gdx.graphics.Color;
+
+// Soal 4
+public class Player extends GameObject {
     public String name;
     public int hp;
-    public int damage;
     public int power;
     public int spellCards;
-    public int target;
 
-    // Constructor
-    public Player(String name, int damage, int hp, int power, int spellCards, int target) {
+    // Soal 4
+    public long score;
+
+    // Soal 4a
+    public Player(String name, int hp, int power, int spellCards) {
+        super(280f, 40f, 32f, 32f, 0f, Color.RED);
         this.name = name;
         this.hp = hp;
-        this.damage = damage;
         this.power = power;
         this.spellCards = spellCards;
-        this.target = target;
+        this.score = 0L;
     }
-    public void takeDamage(int damage) {
-        // 1. Kurangi hp sebesar nilai damage.
-        hp -= damage;
 
-        // 2. HP tidak boleh kurang dari 0.
-        if(hp < 0){
-            hp = 0;
+    // Soal 4b
+    public Player(float x, float y, String name, int hp, int power, int spellCards) {
+        super(x, y, 32f, 32f, 0f, Color.RED);
+        this.name = name;
+        this.hp = hp;
+        this.power = power;
+        this.spellCards = spellCards;
+        this.score = 0L;
+    }
+
+    // Soal 10
+    public void addScore(long points) {
+        if (points > 0) {
+            this.score += points;
         }
-        // 3. Tampilkan HP saat ini dalam format: [EnemyName] took [damage] damage! HP: [currentHP]/[maxHP]
-        if (hp > 0){
-            hp = 0;
-        } else {
-            System.out.print(name + "took" + damage "damage remaining hp: " + hp);
-        } elif {
-            System.out.println(name + "enemy lose");
-        }// 4. Jika HP mencapai 0, tampilkan bahwa Enemy telah dikalahkan dalam format: [EnemyName] was defeated!
-    }
-    public void shoot(Enemy target) {
-
-        int damage = 10;
-        System.out.println(name + "has shooting: " + target "Target" + damage "OMG" );
-        target.takedamage(damage);
-
-
-        // 1. Buat int bernama damage yang dihitung dengan menambahkan power sebanyak 10.
-
-        // 2. Tampilkan informasi bahwa Player menembak Enemy dalam format: [name] shoots [TargetName] dealing [damage] DMG!
-
-        // 3. Panggil method takeDamage() milik object Enemy.
     }
 
+    public long getScore() {
+        return score;
+    }
+    public void setHp(int hp) {
+        this.hp = Math.max(0, hp);
+    }
+    public int getPower(){
+        return power;
+    }
+    public int getSpellCards(){
+        return spellCards;
+    }
+    public String getName() {
+        return name;
+    }
 }
