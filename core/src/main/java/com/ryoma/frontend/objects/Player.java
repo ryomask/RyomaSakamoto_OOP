@@ -112,25 +112,51 @@ public class Player extends GameObject {
     }
 
     // Encapsulation getters and setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public int getHp() { return hp; }
-    public void setHp(int hp) { this.hp = Math.max(0, hp); }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public int getPower() { return power; }
-    public void setPower(int power) { this.power = power; }
+    public int getHp() {
+        return hp;
+    }
 
-    public int getSpellCards() { return spellCards; }
-    public void setSpellCards(int spellCards) { this.spellCards = spellCards; }
+    public void setHp(int hp) {
+        this.hp = Math.max(0, hp);
+    }
 
-    public long getScore() { return score; }
+    public int getPower() {
+        return power;
+    }
+
+    public void setPower(int power) {
+        this.power = power;
+    }
+
+    public int getSpellCards() {
+        return spellCards;
+    }
+
+    public void setSpellCards(int spellCards) {
+        this.spellCards = spellCards;
+    }
+
+    public long getScore() {
+        return score;
+    }
 
     @Override
     public void onCollision(Collidable other) {
         if (other instanceof Item) {
-            System.out.println("Player touches items");
-            collectItem((Item) other);
+            Item item = (Item) other;
+            if (!item.isCollected()) {
+                System.out.println("Player touches items");
+                collectItem(item);
+                item.setCollected(true); // Tandai item sudah diambil
+            }
         }
     }
 }

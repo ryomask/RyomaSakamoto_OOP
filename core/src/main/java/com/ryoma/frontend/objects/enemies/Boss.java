@@ -16,7 +16,10 @@ public class Boss extends Enemy {
     @Override
     public void onCollision(Collidable other) {
         if (other instanceof Player) {
-            System.out.println("Player touches boss");
+            if (collisionCooldown <= 0) {
+                System.out.println("Player touches boss");
+                collisionCooldown = 1.0f;
+            }
         }
     }
 }

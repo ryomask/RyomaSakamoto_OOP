@@ -29,16 +29,12 @@ public class Main extends ApplicationAdapter {
         shapeRenderer = new ShapeRenderer();
         entities = new ArrayList<>();
 
-        // 1. Player: Red square (stationary) at bottom
         player = new Player(280, 40, "Reimu Hakurei", 100, 15, 3);
+        player.setSpeed(200f);
 
-        // 2. Fairy: Pink square (stationary, small)
         fairy = new Fairy(150, 380, "Stage 1 Fairy", 20);
-
-        // 3. Boss: Blue square (stationary, larger size)
         boss = new Boss(380, 400, "Cirno", 150);
 
-        // 4. Items: White squares (moving downwards linearly)
         powerItem = new Item(200, 450, 16, 16, 80f, ItemType.POWER, 500L);
         pointItem = new Item(320, 480, 12, 12, 120f, ItemType.POINT, 1000L);
 
@@ -53,7 +49,6 @@ public class Main extends ApplicationAdapter {
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
 
-        // Update logic: items move downwards linearly
         for (GameObject obj : entities) {
             obj.update(delta);
         }
@@ -63,21 +58,19 @@ public class Main extends ApplicationAdapter {
             for (int j = i + 1; j < entities.size(); j++) {
                 GameObject a = entities.get(i);
                 GameObject b = entities.get(j);
-
                 // TODO: Cek apakah getCoreHitbox() milik a dan b saling overlap (gunakan method .overlaps() milik Rectangle)
                 // TODO: Panggil a.onCollision(b) dan b.onCollision(a)
-               if (a.getCoreHitbox(). overlaps(b.getCoreHitbox())) {
-                   a.onCollision(b);
-                   b.onCollision(a);
-               }
+                if (a.getCoreHitbox().overlaps(b.getCoreHitbox())) {
+                    a.onCollision(b);
+                    b.onCollision(a);
+                }
             }
         }
 
+        entities.removeIf(obj -> obj instanceof Item && ((Item) obj).isCollected());
 
-        // Clear screen
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
-        // Render filled hitboxes with ShapeRenderer
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (GameObject obj : entities) {
             obj.render(shapeRenderer);

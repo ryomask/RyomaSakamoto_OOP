@@ -9,6 +9,7 @@ public class Enemy extends GameObject {
     int hp;
     int maxHp;
     protected long scoreValue;
+    protected float collisionCooldown = 0f;
 
     public Enemy(String name, int hp) {
         super(200, 380, 24, 24, 0, Color.PINK);
@@ -44,6 +45,13 @@ public class Enemy extends GameObject {
 
     public boolean isAlive() {
         return this.hp > 0;
+    }
+
+    @Override
+    public void update(float delta) {
+        if (collisionCooldown > 0) {
+            collisionCooldown -= delta;
+        }
     }
 
     // Encapsulation getters and setters
