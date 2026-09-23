@@ -31,8 +31,10 @@ public class Enemy extends GameObject {
         boolean wasAlive = isAlive();
         setHp(getHp() - damage);
         System.out.println(getName() + " took " + damage + " damage! HP: " + getHp() + "/" + getMaxHp());
+
         if (wasAlive && getHp() == 0) {
             System.out.println(getName() + " was defeated!");
+            destroy(); // Menandai enemy tidak aktif
             return true;
         }
         return false;

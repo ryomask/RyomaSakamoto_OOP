@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.ryoma.frontend.objects.enemies.Enemy;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
+import com.ryoma.frontend.objects.bullets.Bullet;
+import com.ryoma.frontend.objects.BulletType;
 
 public class Player extends GameObject {
     String name;
@@ -63,6 +65,8 @@ public class Player extends GameObject {
     }
 
     public void collectItem(Item item) {
+            if (item.isDestroyed()) return;
+
         ItemType type = item.getItemTypeEnum();
         if (type != null) {
             switch (type) {
@@ -90,6 +94,8 @@ public class Player extends GameObject {
             addScore(item.getScoreValue());
             System.out.println(name + " collected " + item.getItemType() + "!");
         }
+
+        item.destroy();
     }
 
     public void takeDamage(int damage) {
@@ -158,5 +164,11 @@ public class Player extends GameObject {
                 item.setCollected(true); // Tandai item sudah diambil
             }
         }
+    }
+
+    public Bullet shootBullet() {
+        int damage = 10 + power;
+        System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
+        return new Bullet(this.x + (this.width / 2f) - 4f, this.y + this.height, BulletType.AMULET, damage);
     }
 }

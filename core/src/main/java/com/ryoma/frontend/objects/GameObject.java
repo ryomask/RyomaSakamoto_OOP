@@ -15,6 +15,7 @@ public abstract class GameObject implements Collidable {
     protected float height;
     protected float speed;
     protected Color color;
+    protected boolean active = true;
 
     public GameObject(float x, float y, float width, float height, float speed, Color color) {
         this.x = x;
@@ -29,7 +30,7 @@ public abstract class GameObject implements Collidable {
     }
 
     public void render(ShapeRenderer shapeRenderer) {
-        if (shapeRenderer != null && color != null) {
+        if (shapeRenderer != null && color != null && active) {
             shapeRenderer.setColor(color);
             shapeRenderer.rect(x, y, width, height);
         }
@@ -49,27 +50,63 @@ public abstract class GameObject implements Collidable {
     public void onCollision(Collidable other) {
     }
 
-    public float getX() { return x; }
-    public void setX(float x) { this.x = x; }
+    public float getX() {
+        return x;
+    }
 
-    public float getY() { return y; }
-    public void setY(float y) { this.y = y; }
+    public void setX(float x) {
+        this.x = x;
+    }
 
-    public float getWidth() { return width; }
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
     public void setWidth(float width) {
         if (width > 0) this.width = width;
     }
 
-    public float getHeight() { return height; }
+    public float getHeight() {
+        return height;
+    }
+
     public void setHeight(float height) {
         if (height > 0) this.height = height;
     }
 
-    public float getSpeed() { return speed; }
+    public float getSpeed() {
+        return speed;
+    }
+
     public void setSpeed(float speed) {
         if (speed >= 0) this.speed = speed;
     }
 
-    public Color getColor() { return color; }
-    public void setColor(Color color) { this.color = color; }
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public boolean isDestroyed() {
+        return !this.active;
+    }
+
+    public void destroy() {
+        this.active = false;
+    }
+
+    public boolean isOffScreen(float screenWidth, float screenHeight) {
+        return x < -50 || x > (screenWidth + 50) || y < -50 || y > (screenHeight + 50);
+    }
 }
