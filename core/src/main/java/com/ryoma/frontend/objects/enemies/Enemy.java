@@ -34,7 +34,7 @@ public class Enemy extends GameObject {
 
         if (wasAlive && getHp() == 0) {
             System.out.println(getName() + " was defeated!");
-            destroy(); // Menandai enemy tidak aktif
+            destroy();
             return true;
         }
         return false;
@@ -51,6 +51,7 @@ public class Enemy extends GameObject {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
         if (collisionCooldown > 0) {
             collisionCooldown -= delta;
         }

@@ -3,11 +3,14 @@ package com.ryoma.frontend.objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.ryoma.frontend.objects.enemies.Enemy;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
 import com.ryoma.frontend.objects.bullets.Bullet;
 import com.ryoma.frontend.objects.BulletType;
+import com.ryoma.frontend.systems.AssetManager;
 
 public class Player extends GameObject {
     String name;
@@ -36,6 +39,8 @@ public class Player extends GameObject {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
+        float dx = 0;
         if (Gdx.input != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 this.y += speed * delta;
@@ -47,12 +52,15 @@ public class Player extends GameObject {
 
             if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 this.x -= speed * delta;
+                dx = -1f;
             }
 
             if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 this.x += speed * delta;
+                dx = 1f;
             }
         }
+        updateAnimationState(dx);
     }
 
     public void shoot(Enemy target) {
@@ -153,6 +161,57 @@ public class Player extends GameObject {
     public long getScore() {
         return score;
     }
+
+    public void updateAnimationState(float dx) {
+        AssetManager assets = AssetManager.getInstance();
+        if (dx < 0) {
+            // TODO:
+            // 1. Lanjutkan perubahan hanya jika currentDir bukan -1.
+            // 2. Ubah currentDir menjadi -1.
+            // 3. Ambil animasi "player_left" melalui assets.getAnimation(...).
+            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
+            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
+            if (currentDir != -1) {
+                currentDir = -1;
+                Animation<TextureRegion> anim = assets.getAnimation( "player_left");
+                if (anim != null){
+                    setAnimation(anim);
+                }
+            }
+
+        } else if (dx > 0) {
+            // TODO:
+            // 1. Lanjutkan perubahan hanya jika currentDir bukan 1.
+            // 2. Ubah currentDir menjadi 1.
+            // 3. Ambil animasi "player_right" melalui assets.getAnimation(...).
+            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
+            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
+            if (currentDir != 1) {
+                currentDir = 1;
+                Animation<TextureRegion> anim = assets.getAnimation( "player_right");
+                if (anim != null){
+                    setAnimation(anim);
+                }
+            }
+
+        } else {
+            // TODO:
+            // 1. Lanjutkan perubahan hanya jika currentDir bukan 0.
+            // 2. Ubah currentDir menjadi 0.
+            // 3. Ambil animasi "player_idle" melalui assets.getAnimation(...).
+            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
+            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
+            if (currentDir != 0) {
+                currentDir = 0;
+                Animation<TextureRegion> anim = assets.getAnimation( "player_idle");
+                if (anim != null){
+                    setAnimation(anim);
+                }
+            }
+
+        }
+    }
+
 
     @Override
     public void onCollision(Collidable other) {
