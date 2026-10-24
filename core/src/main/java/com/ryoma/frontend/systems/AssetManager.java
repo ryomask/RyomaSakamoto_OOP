@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP;
-
 public class AssetManager {
     private static AssetManager instance;
 
@@ -55,7 +53,7 @@ public class AssetManager {
     }
 
     public void registerAnimationFromSheet(String key, String filename, int tileWidth, int tileHeight, int row, int numFrames, float frameDuration) {
-        registerAnimationFromSheet(key, filename, tileWidth, tileHeight, row, 0, numFrames, frameDuration, LOOP);
+        registerAnimationFromSheet(key, filename, tileWidth, tileHeight, row, 0, numFrames, frameDuration, Animation.PlayMode.LOOP);
     }
 
     public void registerAnimationFromSheet(String key, String filename, int tileWidth, int tileHeight, int row, int startCol, int numFrames, float frameDuration, Animation.PlayMode playMode) {
@@ -77,23 +75,26 @@ public class AssetManager {
     public Animation<TextureRegion> getAnimation(String key) { return animationMap.get(key); }
 
     public void init() {
-        registerAnimationFromSheet("player_idle", "player.png", 32, 48, 0,  8, 0.125f);
-        registerAnimationFromSheet("player_left", "player.png", 32, 48, 1,  4, 0.12f);
-        registerAnimationFromSheet("player_right", "player.png", 32, 48, 2,  4, 0.12f);
-        registerAnimationFromSheet("boss_idle", "rumia.png", 64, 64, 0,  4, 0.2f);
-        registerAnimationFromSheet("boss_left", "rumia.png", 64, 64, 1,  4, 0.15f);
-        registerAnimationFromSheet("boss_right", "rumia.png", 64, 64, 2,  4, 0.15f);
-        registerAnimationFromSheet("fairy_idle_red", "fairy.png", 32, 32, 1,  8, 0.125f);
-        registerAnimationFromSheet("fairy_idle_blue", "fairy.png", 32, 32, 0,  8, 0.125f);
+        // TODO:
+        // Tambahkan registrasi animasi yang belum lengkap sesuai tabel.
+        // Gunakan overload registerAnimationFromSheet()
+        registerAnimationFromSheet("player_idle", "player.png", 32, 48, 0, 0, 8, 0.125f, Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("player_left", "player.png", 32, 48, 1, 0, 4, 0.12f, Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("player_right", "player.png", 32, 48, 2, 0, 4, 0.12f, Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("boss_idle", "rumia.png", 64, 64, 0, 0, 4, 0.2f, Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("boss_left", "rumia.png", 64, 64, 1, 0, 4, 0.15f, Animation.PlayMode.REVERSED);
+        registerAnimationFromSheet("boss_right", "rumia.png", 64, 64, 2, 0, 4, 0.15f, Animation.PlayMode.NORMAL);
+        registerAnimationFromSheet("fairy_idle_red", "fairy.png", 32, 32, 1, 0, 8, 0.125f, Animation.PlayMode.LOOP);
+        registerAnimationFromSheet("fairy_idle_blue", "fairy.png", 32, 32, 0, 0, 8, 0.125f, Animation.PlayMode.LOOP);
 
-        registerAnimationFromSheet("rumia_idle", "rumia.png", 64, 64, 0, 4, 0.2f);
-        registerAnimationFromSheet("fairy_idle", "fairy.png", 32, 32, 0, 4, 0.15f);
-        registerRegionFromSheet("bullet_danmaku", "bullets_small.png", 16, 16, 1, 2);
-
+        // TODO: Tambahkan Registrasi Region sesuai tabel
+        registerRegionFromSheet("bullet_amulet", "amulet_reimu.png", 16, 16, 0, 0);
+        registerRegionFromSheet("bullet_amulet_homing", "amulet_reimu.png", 16, 16, 1, 0);
+        registerRegionFromSheet("bullet_danmaku", "bullets_small.png", 16, 16, 2, 3);
         registerRegionFromSheet("item_power", "items.png", 16, 16, 0, 0);
         registerRegionFromSheet("item_point", "items.png", 16, 16, 0, 1);
-        registerRegionFromSheet("item_bomb", "items.png", 16, 16, 0, 2);
-        registerRegionFromSheet("item_life", "items.png", 16, 16, 0, 3);
+        registerRegionFromSheet("item_bomb", "items.png", 16, 16, 0, 3);
+        registerRegionFromSheet("item_life", "items.png", 16, 16, 0, 5);
     }
 
     public void dispose() {

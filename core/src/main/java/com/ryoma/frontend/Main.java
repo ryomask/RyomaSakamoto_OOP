@@ -9,42 +9,64 @@ import com.ryoma.frontend.objects.GameObject;
 import com.ryoma.frontend.objects.Player;
 import com.ryoma.frontend.objects.enemies.Boss;
 import com.ryoma.frontend.objects.enemies.Fairy;
+import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
 import com.ryoma.frontend.systems.AssetManager;
+import com.ryoma.frontend.systems.AudioManager;
 import com.ryoma.frontend.systems.EntityFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.ryoma.frontend.systems.EntityFactory.*;
-
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
     private Player player;
+    private List<Fairy> fairy;
+    private Boss boss;
+    private Item powerItem;
+    private Item pointItem;
     private List<GameObject> entities;
 
     @Override
     public void create() {
+        // TODO 1:
+        // Pada inisialisasi renderer, buat SpriteBatch dan simpan ke batch.
+        // Hint LibGDX: new SpriteBatch().
         batch = new SpriteBatch();
+
+        // TODO 2:
+        // Inisialisasi list fairy dan entities sebagai ArrayList kosong.
+        fairy = new ArrayList<>();
         entities = new ArrayList<>();
 
-        // Inisialisasi Asset Singleton
+        // TODO 3:
+        // Sebelum membuat entitas, ambil instance AssetManager dan panggil init().
         AssetManager.getInstance().init();
+        AudioManager.getInstance().init();
 
-        // Pembuatan entitas lewat Factory
-        player = createPlayer(280, 40, "Reimu Hakurei", 100, 15, 3);
-        Fairy redFairy = createFairy(150, 380, "Red Fairy", 20);
-        Fairy blueFairy = createFairy(250, 380, "Blue Fairy", 20,"fairy_idle_blue");
-        Boss boss = createBoss(380, 400, "Rumia", 150);
+        // TODO 4:
+        // Ubah pembuatan semua entitas! Ikuti tabel dan buat Player, Fairy, Boss, dan Item
+        // agar memakai metode EntityFactory yang benar.
+        // Untuk kedua Fairy, masukkan mereka ke list fairy menggunakan add(...).
+        player = EntityFactory.createPlayer(280, 40, "Reimu Hakurei", 100, 15, 3);
+        Fairy redFairy = EntityFactory.createFairy(150, 380, "Red Fairy", 20);
+        Fairy blueFairy = EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue");
+        fairy.add(redFairy);
+        fairy.add(blueFairy);
+
+        boss = EntityFactory.createBoss(380, 400, "Rumia", 150);
         powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
         pointItem = EntityFactory.createItem(320, 480, ItemType.POINT);
 
+        // TODO 5:
+        // Masukkan semua objek yang baru saja kita buat ke dalam entities.
         entities.add(player);
-        entities.add(createFairy(150, 380, "Stage 1 Fairy", 20));
-        entities.add(createBoss(380, 400, "Rumia", 150));
-        entities.add(EntityFactory.createItem(200, 450, ItemType.POWER));
-        entities.add(EntityFactory.createItem(320, 480, ItemType.POINT));
+        entities.add(redFairy);
+        entities.add(blueFairy);
+        entities.add(boss);
+        entities.add(powerItem);
+        entities.add(pointItem);
     }
 
     public <T extends GameObject> void updateAndClean(List<T> list, float delta, float screenWidth, float screenHeight) {
@@ -90,6 +112,7 @@ public class Main extends ApplicationAdapter {
         batch.begin();
         for (GameObject entity : entities) {
             if (!entity.isDestroyed()){
+                // TODO: Buat agar setiap entity melakukan method .render() dengan mengoper parameter SpriteBatch.
                 entity.render(batch);
             }
         }
@@ -99,6 +122,8 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         if (batch != null) batch.dispose();
+        // TODO: Panggil dispose untuk AssetManager agar Texture yang dimuat juga dilepas.
         AssetManager.getInstance().dispose();
+        AudioManager.getInstance().dispose();
     }
 }

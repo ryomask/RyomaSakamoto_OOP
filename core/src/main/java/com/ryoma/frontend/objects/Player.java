@@ -9,8 +9,8 @@ import com.ryoma.frontend.objects.enemies.Enemy;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
 import com.ryoma.frontend.objects.bullets.Bullet;
-import com.ryoma.frontend.objects.BulletType;
 import com.ryoma.frontend.systems.AssetManager;
+import com.ryoma.frontend.systems.EntityFactory;
 
 public class Player extends GameObject {
     String name;
@@ -18,9 +18,10 @@ public class Player extends GameObject {
     int power;
     int spellCards;
     private long score;
+    private int currentDir = 0;
 
     public Player(String name, int hp, int power, int spellCards) {
-        super(280, 40, 32, 32, 200, Color.RED);
+        super(280, 40, 32, 48, 200, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -29,7 +30,7 @@ public class Player extends GameObject {
     }
 
     public Player(float x, float y, String name, int hp, int power, int spellCards) {
-        super(x, y, 32, 32, 200, Color.RED);
+        super(x, y, 32, 48, 200, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
@@ -39,8 +40,13 @@ public class Player extends GameObject {
 
     @Override
     public void update(float delta) {
+        // TODO 1: panggil update(delta) milik GameObject melalui super.
         super.update(delta);
-        float dx = 0;
+
+        // TODO 2: Siapkan variabel lokal float dx dengan nilai awal 0
+        // (dx = delta x, mencatat perubahan arah horizontal untuk animasi)
+        float dx = 0f;
+
         if (Gdx.input != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 this.y += speed * delta;
@@ -52,15 +58,68 @@ public class Player extends GameObject {
 
             if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 this.x -= speed * delta;
+                // TODO 3: Ganti nilai dx sesuai dengan arahnya.
+                // (Kalau ke kiri, maka dx ke mana ya?)
                 dx = -1f;
             }
 
             if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 this.x += speed * delta;
+                // TODO 4: Ganti nilai dx sesuai dengan arahnya.
+                // (Kalau ke kanan, maka dx ke mana ya?)
                 dx = 1f;
             }
         }
+
+        // TODO 5: Panggil updateAnimationState(dx)
         updateAnimationState(dx);
+    }
+
+    public void updateAnimationState(float dx) {
+        AssetManager assets = AssetManager.getInstance();
+        if (dx < 0) {
+            // TODO:
+            // 1. Lanjutkan perubahan hanya jika currentDir bukan -1.
+            // 2. Ubah currentDir menjadi -1.
+            // 3. Ambil animasi "player_left" melalui assets.getAnimation(...).
+            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
+            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
+            if (currentDir != -1) {
+                currentDir = -1;
+                Animation<TextureRegion> anim = assets.getAnimation("player_left");
+                if (anim != null) {
+                    setAnimation(anim);
+                }
+            }
+        } else if (dx > 0) {
+            // TODO:
+            // 1. Lanjutkan perubahan hanya jika currentDir bukan 1.
+            // 2. Ubah currentDir menjadi 1.
+            // 3. Ambil animasi "player_right" melalui assets.getAnimation(...).
+            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
+            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
+            if (currentDir != 1) {
+                currentDir = 1;
+                Animation<TextureRegion> anim = assets.getAnimation("player_right");
+                if (anim != null) {
+                    setAnimation(anim);
+                }
+            }
+        } else {
+            // TODO:
+            // 1. Lanjutkan perubahan hanya jika currentDir bukan 0.
+            // 2. Ubah currentDir menjadi 0.
+            // 3. Ambil animasi "player_idle" melalui assets.getAnimation(...).
+            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
+            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
+            if (currentDir != 0) {
+                currentDir = 0;
+                Animation<TextureRegion> anim = assets.getAnimation("player_idle");
+                if (anim != null) {
+                    setAnimation(anim);
+                }
+            }
+        }
     }
 
     public void shoot(Enemy target) {
@@ -73,7 +132,8 @@ public class Player extends GameObject {
     }
 
     public void collectItem(Item item) {
-            if (item.isDestroyed()) return;
+        if (item.isDestroyed()) return;
+        com.ryoma.frontend.systems.AudioManager.getInstance().playItemCollectSound();
 
         ItemType type = item.getItemTypeEnum();
         if (type != null) {
@@ -125,93 +185,15 @@ public class Player extends GameObject {
         return getHp() > 0;
     }
 
-    // Encapsulation getters and setters
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getHp() {
-        return hp;
-    }
-
-    public void setHp(int hp) {
-        this.hp = Math.max(0, hp);
-    }
-
-    public int getPower() {
-        return power;
-    }
-
-    public void setPower(int power) {
-        this.power = power;
-    }
-
-    public int getSpellCards() {
-        return spellCards;
-    }
-
-    public void setSpellCards(int spellCards) {
-        this.spellCards = spellCards;
-    }
-
-    public long getScore() {
-        return score;
-    }
-
-    public void updateAnimationState(float dx) {
-        AssetManager assets = AssetManager.getInstance();
-        if (dx < 0) {
-            // TODO:
-            // 1. Lanjutkan perubahan hanya jika currentDir bukan -1.
-            // 2. Ubah currentDir menjadi -1.
-            // 3. Ambil animasi "player_left" melalui assets.getAnimation(...).
-            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
-            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
-            if (currentDir != -1) {
-                currentDir = -1;
-                Animation<TextureRegion> anim = assets.getAnimation( "player_left");
-                if (anim != null){
-                    setAnimation(anim);
-                }
-            }
-
-        } else if (dx > 0) {
-            // TODO:
-            // 1. Lanjutkan perubahan hanya jika currentDir bukan 1.
-            // 2. Ubah currentDir menjadi 1.
-            // 3. Ambil animasi "player_right" melalui assets.getAnimation(...).
-            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
-            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
-            if (currentDir != 1) {
-                currentDir = 1;
-                Animation<TextureRegion> anim = assets.getAnimation( "player_right");
-                if (anim != null){
-                    setAnimation(anim);
-                }
-            }
-
-        } else {
-            // TODO:
-            // 1. Lanjutkan perubahan hanya jika currentDir bukan 0.
-            // 2. Ubah currentDir menjadi 0.
-            // 3. Ambil animasi "player_idle" melalui assets.getAnimation(...).
-            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
-            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
-            if (currentDir != 0) {
-                currentDir = 0;
-                Animation<TextureRegion> anim = assets.getAnimation( "player_idle");
-                if (anim != null){
-                    setAnimation(anim);
-                }
-            }
-
-        }
-    }
-
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public int getHp() { return hp; }
+    public void setHp(int hp) { this.hp = Math.max(0, hp); }
+    public int getPower() { return power; }
+    public void setPower(int power) { this.power = power; }
+    public int getSpellCards() { return spellCards; }
+    public void setSpellCards(int spellCards) { this.spellCards = spellCards; }
+    public long getScore() { return score; }
 
     @Override
     public void onCollision(Collidable other) {
@@ -220,7 +202,7 @@ public class Player extends GameObject {
             if (!item.isCollected()) {
                 System.out.println("Player touches items");
                 collectItem(item);
-                item.setCollected(true); // Tandai item sudah diambil
+                item.setCollected(true);
             }
         }
     }
@@ -228,6 +210,9 @@ public class Player extends GameObject {
     public Bullet shootBullet() {
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
-        return new Bullet(this.x + (this.width / 2f) - 4f, this.y + this.height, BulletType.AMULET, damage);
+
+        com.ryoma.frontend.systems.AudioManager.getInstance().playShootSound(); // <--- Tambahkan ini
+
+        return EntityFactory.createPlayerBullet(this.x + (this.width / 2f) - 8f, this.y + this.height, damage);
     }
 }
