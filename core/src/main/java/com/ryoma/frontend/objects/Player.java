@@ -211,7 +211,7 @@ public class Player extends GameObject {
         int damage = 10 + power;
         System.out.println(name + " shoots bullet dealing " + damage + " DMG!");
 
-        com.ryoma.frontend.systems.AudioManager.getInstance().playShootSound(); // <--- Tambahkan ini
+        com.ryoma.frontend.systems.AudioManager.getInstance().playShootSound();
 
         return EntityFactory.createPlayerBullet(this.x + (this.width / 2f) - 8f, this.y + this.height, damage);
     }

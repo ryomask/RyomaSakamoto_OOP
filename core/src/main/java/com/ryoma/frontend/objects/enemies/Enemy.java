@@ -35,7 +35,7 @@ public class Enemy extends GameObject {
         if (wasAlive && getHp() == 0) {
             System.out.println(getName() + " was defeated!");
 
-            com.ryoma.frontend.systems.AudioManager.getInstance().playEnemyDieSound(); // <--- Tambahkan ini
+            com.ryoma.frontend.systems.AudioManager.getInstance().playEnemyDieSound();
 
             destroy();
             return true;
