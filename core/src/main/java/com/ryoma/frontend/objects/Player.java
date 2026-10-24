@@ -40,7 +40,6 @@ public class Player extends GameObject {
 
     @Override
     public void update(float delta) {
-        // TODO 1: panggil update(delta) milik GameObject melalui super.
         super.update(delta);
 
         // TODO 2: Siapkan variabel lokal float dx dengan nilai awal 0
