@@ -11,9 +11,7 @@ import com.ryoma.frontend.objects.enemies.Boss;
 import com.ryoma.frontend.objects.enemies.Fairy;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
-import com.ryoma.frontend.systems.AssetManager;
-import com.ryoma.frontend.systems.AudioManager;
-import com.ryoma.frontend.systems.EntityFactory;
+import com.ryoma.frontend.systems.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,6 +25,9 @@ public class Main extends ApplicationAdapter {
     private Item powerItem;
     private Item pointItem;
     private List<GameObject> entities;
+    private BulletManager bulletManager;
+    private CollisionReferee collisionReferee;
+    private float enemyShootTimer = 0f;
 
     @Override
     public void create() {
@@ -39,6 +40,8 @@ public class Main extends ApplicationAdapter {
         // Inisialisasi list fairy dan entities sebagai ArrayList kosong.
         fairy = new ArrayList<>();
         entities = new ArrayList<>();
+        bulletManager = new BulletManager();
+        collisionReferee = new CollisionReferee();
 
         // TODO 3:
         // Sebelum membuat entitas, ambil instance AssetManager dan panggil init().
@@ -82,13 +85,29 @@ public class Main extends ApplicationAdapter {
         }
     }
 
+    private void updateEnemyScheduler(float delta) {
+        enemyShootTimer += delta;
+        if (enemyShootTimer >= 1.5f) {
+            boss.shootBullet(bulletManager);
+            enemyShootTimer = 0f;
+        }
+    }
+
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
+        float screenWitdth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             entities.add(player.shootBullet());
         }
+
+        updateEnemyScheduler(delta);
+        updateAndClean(entities, delta, screenWitdth, screenHeight);
+        bulletManager.update(delta, screenWitdth, screenHeight);
+        collisionReferee.resolveCollisions(player, entities, bulletManager);
+
 
         updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -116,6 +135,7 @@ public class Main extends ApplicationAdapter {
                 entity.render(batch);
             }
         }
+        bulletManager.render(batch);
         batch.end();
     }
 

@@ -5,11 +5,14 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.ryoma.frontend.objects.enemies.Enemy;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
 import com.ryoma.frontend.objects.bullets.Bullet;
+import com.ryoma.frontend.objects.patterns.ShootingPattern;
 import com.ryoma.frontend.systems.AssetManager;
+import com.ryoma.frontend.systems.BulletManager;
 import com.ryoma.frontend.systems.EntityFactory;
 
 public class Player extends GameObject {
@@ -19,6 +22,7 @@ public class Player extends GameObject {
     int spellCards;
     private long score;
     private int currentDir = 0;
+    private ShootingPattern shootingPattern;
 
     public Player(String name, int hp, int power, int spellCards) {
         super(280, 40, 32, 48, 200, Color.RED);
@@ -42,8 +46,6 @@ public class Player extends GameObject {
     public void update(float delta) {
         super.update(delta);
 
-        // TODO 2: Siapkan variabel lokal float dx dengan nilai awal 0
-        // (dx = delta x, mencatat perubahan arah horizontal untuk animasi)
         float dx = 0f;
 
         if (Gdx.input != null) {
@@ -57,32 +59,21 @@ public class Player extends GameObject {
 
             if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 this.x -= speed * delta;
-                // TODO 3: Ganti nilai dx sesuai dengan arahnya.
-                // (Kalau ke kiri, maka dx ke mana ya?)
                 dx = -1f;
             }
 
             if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
                 this.x += speed * delta;
-                // TODO 4: Ganti nilai dx sesuai dengan arahnya.
-                // (Kalau ke kanan, maka dx ke mana ya?)
                 dx = 1f;
             }
         }
 
-        // TODO 5: Panggil updateAnimationState(dx)
         updateAnimationState(dx);
     }
 
     public void updateAnimationState(float dx) {
         AssetManager assets = AssetManager.getInstance();
         if (dx < 0) {
-            // TODO:
-            // 1. Lanjutkan perubahan hanya jika currentDir bukan -1.
-            // 2. Ubah currentDir menjadi -1.
-            // 3. Ambil animasi "player_left" melalui assets.getAnimation(...).
-            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
-            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
             if (currentDir != -1) {
                 currentDir = -1;
                 Animation<TextureRegion> anim = assets.getAnimation("player_left");
@@ -91,12 +82,6 @@ public class Player extends GameObject {
                 }
             }
         } else if (dx > 0) {
-            // TODO:
-            // 1. Lanjutkan perubahan hanya jika currentDir bukan 1.
-            // 2. Ubah currentDir menjadi 1.
-            // 3. Ambil animasi "player_right" melalui assets.getAnimation(...).
-            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
-            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
             if (currentDir != 1) {
                 currentDir = 1;
                 Animation<TextureRegion> anim = assets.getAnimation("player_right");
@@ -105,12 +90,6 @@ public class Player extends GameObject {
                 }
             }
         } else {
-            // TODO:
-            // 1. Lanjutkan perubahan hanya jika currentDir bukan 0.
-            // 2. Ubah currentDir menjadi 0.
-            // 3. Ambil animasi "player_idle" melalui assets.getAnimation(...).
-            //    Simpan pada variabel lokal bertipe Animation<TextureRegion> bernama anim.
-            // 4. Jika anim tidak null, pasang anim melalui setAnimation(...).
             if (currentDir != 0) {
                 currentDir = 0;
                 Animation<TextureRegion> anim = assets.getAnimation("player_idle");
@@ -193,6 +172,28 @@ public class Player extends GameObject {
     public int getSpellCards() { return spellCards; }
     public void setSpellCards(int spellCards) { this.spellCards = spellCards; }
     public long getScore() { return score; }
+
+    @Override
+    public Rectangle getCoreHitbox() {
+        return new Rectangle(x + (width / 2f) - 4f, y + (height / 2f) - 4f, 8f, 8f);
+    }
+
+    @Override
+    public Rectangle getGrazeHitbox() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    public void shootBullet(BulletManager bulletManager) {
+        if (bulletManager == null) return;
+        if (shootingPattern != null) {
+            shootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+        } else {
+            bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0f, 400f, 25);
+        }
+    }
+
+    public ShootingPattern getShootingPattern() { return shootingPattern; }
+    public void setShootingPattern(ShootingPattern shootingPattern) { this.shootingPattern = shootingPattern; }
 
     @Override
     public void onCollision(Collidable other) {
