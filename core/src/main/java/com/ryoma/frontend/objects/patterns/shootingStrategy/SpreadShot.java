@@ -1,17 +1,19 @@
 package com.ryoma.frontend.objects.patterns.shootingStrategy;
 
+import com.ryoma.frontend.objects.GameObject;
+import com.ryoma.frontend.objects.patterns.ShootingPattern;
+import com.ryoma.frontend.systems.BulletManager;
+
 public class SpreadShot implements ShootingPattern {
     private float speed;
     private int numBullets;
     private float spreadAngleDegrees;
     private GameObject target;
 
-    // Konstruktor Spreadshot dengan sudut statis
     public SpreadShot(float speed, int numBullets, float spreadAngleDegrees) {
         this(speed, numBullets, spreadAngleDegrees, null);
     }
 
-    // Konstruktor Spreadshot terarah (FAN_AIMED) yang membidik target
     public SpreadShot(float speed, int numBullets, float spreadAngleDegrees, GameObject target) {
         this.speed = speed;
         this.numBullets = numBullets;
@@ -21,7 +23,6 @@ public class SpreadShot implements ShootingPattern {
 
     @Override
     public void execute(float originX, float originY, BulletManager bulletManager, boolean isPlayer) {
-        // Sudut dasar: Jika ada target, bidik target; jika tidak, gunakan 90° (player) / 270° (Musuh)
         float centerAngle;
         if (target != null) {
             float targetCenterX = target.getX() + target.getWidth() / 2f;
@@ -39,7 +40,6 @@ public class SpreadShot implements ShootingPattern {
             float angleDeg = startAngle + (i * angleStep);
             float angleRad = (float) Math.toRadians(angleDeg);
 
-            // Dekomposisi kecepatan ke sumbu X dan Y
             float vx = (float) (speed * Math.cos(angleRad));
             float vy = (float) (speed * Math.sin(angleRad));
 
@@ -63,4 +63,3 @@ public class SpreadShot implements ShootingPattern {
     public GameObject getTarget() { return target; }
     public void setTarget(GameObject target) { this.target = target; }
 }
-

@@ -1,4 +1,4 @@
-package com.ryoma.frontend.objects;
+package com.ryoma.frontend.objects.bullets;
 
 public enum BulletType {
     DANMAKU,

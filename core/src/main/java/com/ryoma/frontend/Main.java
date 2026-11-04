@@ -31,42 +31,26 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-        // TODO 1:
-        // Pada inisialisasi renderer, buat SpriteBatch dan simpan ke batch.
-        // Hint LibGDX: new SpriteBatch().
         batch = new SpriteBatch();
 
-        // TODO 2:
-        // Inisialisasi list fairy dan entities sebagai ArrayList kosong.
         fairy = new ArrayList<>();
         entities = new ArrayList<>();
         bulletManager = new BulletManager();
         collisionReferee = new CollisionReferee();
 
-        // TODO 3:
-        // Sebelum membuat entitas, ambil instance AssetManager dan panggil init().
         AssetManager.getInstance().init();
         AudioManager.getInstance().init();
 
-        // TODO 4:
-        // Ubah pembuatan semua entitas! Ikuti tabel dan buat Player, Fairy, Boss, dan Item
-        // agar memakai metode EntityFactory yang benar.
-        // Untuk kedua Fairy, masukkan mereka ke list fairy menggunakan add(...).
-        player = EntityFactory.createPlayer(280, 40, "Reimu Hakurei", 100, 15, 3);
-        Fairy redFairy = EntityFactory.createFairy(150, 380, "Red Fairy", 20);
-        Fairy blueFairy = EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue");
-        fairy.add(redFairy);
-        fairy.add(blueFairy);
+        // Penyesuaian koordinat entitas ke area bermain baru (Playfield X: 32..416, Y: 16..560)
+        player = EntityFactory.createPlayer(200, 50, "Reimu Hakurei", 100, 15, 3);
+        fairy.add(EntityFactory.createFairy(150, 380, "Red Fairy", 20));
+        fairy.add(EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue"));
+        boss = EntityFactory.createBoss(250, 400, "Rumia", 150);
+        powerItem = EntityFactory.createItem(180, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(220, 480, ItemType.POINT);
 
-        boss = EntityFactory.createBoss(380, 400, "Rumia", 150);
-        powerItem = EntityFactory.createItem(200, 450, ItemType.POWER);
-        pointItem = EntityFactory.createItem(320, 480, ItemType.POINT);
-
-        // TODO 5:
-        // Masukkan semua objek yang baru saja kita buat ke dalam entities.
         entities.add(player);
-        entities.add(redFairy);
-        entities.add(blueFairy);
+        entities.addAll(fairy);
         entities.add(boss);
         entities.add(powerItem);
         entities.add(pointItem);
@@ -93,45 +77,53 @@ public class Main extends ApplicationAdapter {
         }
     }
 
+    private void restartGame() {
+        System.out.println("[Main] Restarting game...");
+        entities.clear();
+        bulletManager.clearEnemyBullets();
+        bulletManager.clearPlayerBullets();
+
+        player.resetGame();
+
+        fairy.clear();
+        fairy.add(EntityFactory.createFairy(150, 380, "Red Fairy", 20));
+        fairy.add(EntityFactory.createFairy(250, 380, "Blue Fairy", 20, "fairy_idle_blue"));
+        boss = EntityFactory.createBoss(250, 400, "Rumia", 150);
+        powerItem = EntityFactory.createItem(180, 450, ItemType.POWER);
+        pointItem = EntityFactory.createItem(220, 480, ItemType.POINT);
+
+        entities.add(player);
+        entities.addAll(fairy);
+        entities.add(boss);
+        entities.add(powerItem);
+        entities.add(pointItem);
+    }
+
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
-        float screenWitdth = Gdx.graphics.getWidth();
+        float screenWidth = Gdx.graphics.getWidth();
         float screenHeight = Gdx.graphics.getHeight();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
-            entities.add(player.shootBullet());
+            player.shootBullet(bulletManager);
+        }
+
+        // Contoh pemanggilan restart jika game over dan tombol R ditekan
+        if (player.isGameOver() && Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            restartGame();
         }
 
         updateEnemyScheduler(delta);
-        updateAndClean(entities, delta, screenWitdth, screenHeight);
-        bulletManager.update(delta, screenWitdth, screenHeight);
+        updateAndClean(entities, delta, screenWidth, screenHeight);
+        bulletManager.update(delta, screenWidth, screenHeight);
         collisionReferee.resolveCollisions(player, entities, bulletManager);
-
-
-        updateAndClean(entities, delta, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        for (int i = 0; i < entities.size(); i++) {
-            for (int j = i + 1; j < entities.size(); j++) {
-                GameObject a = entities.get(i);
-                GameObject b = entities.get(j);
-
-                if (!a.isDestroyed() && !b.isDestroyed()) {
-                    if (a.getCoreHitbox().overlaps(b.getCoreHitbox())) {
-                        a.onCollision(b);
-                        b.onCollision(a);
-                    }
-                }
-            }
-        }
 
         ScreenUtils.clear(0.1f, 0.1f, 0.15f, 1f);
 
-        // Render menggunakan SpriteBatch
         batch.begin();
         for (GameObject entity : entities) {
             if (!entity.isDestroyed()){
-                // TODO: Buat agar setiap entity melakukan method .render() dengan mengoper parameter SpriteBatch.
                 entity.render(batch);
             }
         }
@@ -142,7 +134,6 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         if (batch != null) batch.dispose();
-        // TODO: Panggil dispose untuk AssetManager agar Texture yang dimuat juga dilepas.
         AssetManager.getInstance().dispose();
         AudioManager.getInstance().dispose();
     }

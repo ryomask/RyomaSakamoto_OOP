@@ -20,49 +20,55 @@ public class CollisionReferee {
             if (bullet.isDestroyed()) continue;
 
             for (GameObject entity : entities) {
-            if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
-                if (bullet.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
-                    boolean defeated = enemy.takeDamage(bullet.getDamage());
-                    if (defeated) {
-                        player.addScore(enemy.getScoreValue());
-                        Item dropPower = EntityFactory.createPowerItem(enemy.getX(), enemy.getY());
-                        newDrops.add(dropPower);
+                if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
+                    if (bullet.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
+                        boolean defeated = enemy.takeDamage(bullet.getDamage());
+                        if (defeated) {
+                            player.addScore(enemy.getScoreValue());
+                            Item dropPower = EntityFactory.createPowerItem(enemy.getX(), enemy.getY());
+                            newDrops.add(dropPower);
+                        }
+                        bullet.destroy();
+                        break;
                     }
-                    bullet.destroy();
-                    break;
                 }
             }
         }
-    }
 
-        for(Bullet bullet :bulletManager.getActiveEnemyBullets()){
-        if (bullet.isDestroyed()) continue;
+        for (Bullet bullet : bulletManager.getActiveEnemyBullets()) {
+            if (bullet.isDestroyed()) continue;
 
-        if (player.isAlive() && !player.isDestroyed()) {
-            if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {
-                player.takeDamage(bullet.getDamage());
-                bullet.destroy();
-            } else if (!bullet.hasBeenGrazed() && bullet.getCoreHitbox()) {
-                bullet.setGrazed(true);
-                player.addScore(50);
-                System.out.println("[CollisionReferee]GRAZE! Reimu Hakurei grazed an enemy bullet (+50pts)");
+            if (player.isAlive() && !player.isDestroyed()) {
+                if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {
+                    player.takeDamage(bullet.getDamage());
+                    bullet.destroy();
+                } else if (!bullet.hasBeenGrazed() && bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
+                    bullet.setGrazed(true);
+                    player.addScore(50);
+                    System.out.println("[CollisionReferee] GRAZE! Reimu Hakurei grazed an enemy bullet (+50 pts)!");
+                }
             }
         }
-    }
 
-        for(GameObject entity :entities){
-        if (entity.isDestroyed()) continue;
-        if (!item.isCollected()) {
-            if (item.getCoreHitbox().overlaps(player.getCoreHitbox()) || item.getCoreHitbox().overlaps(player.getGrazeHitboc())) {
-                player.collectItem(item);
-                item.setCollected(true);
+        for (GameObject entity : entities) {
+            if (entity.isDestroyed()) continue;
+
+            if (entity instanceof Item item) {
+                if (!item.isCollected()) {
+                    if (item.getCoreHitbox().overlaps(player.getCoreHitbox()) || item.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
+                        player.collectItem(item);
+                        item.setCollected(true);
+                    }
+                }
+            }
+
+            if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
+                if (player.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
+                    player.takeDamage(10);
+                }
             }
         }
-    }
-        if(entity instanceofEnemy enemy &&!enemy.isDestroyed()){
-        if (player.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
-            player.takeDamage(10);
-        }
+
+        entities.addAll(newDrops);
     }
 }
-

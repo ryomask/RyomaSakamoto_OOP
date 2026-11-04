@@ -2,7 +2,6 @@ package com.ryoma.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.ryoma.frontend.objects.BulletType;
 import com.ryoma.frontend.objects.Collidable;
 import com.ryoma.frontend.objects.GameObject;
 import com.ryoma.frontend.objects.enemies.Enemy;
