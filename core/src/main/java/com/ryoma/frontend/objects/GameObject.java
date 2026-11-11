@@ -74,4 +74,9 @@ public abstract class GameObject implements Collidable {
     public boolean isOffScreen(float screenWidth, float screenHeight) {
         return x < -50 || x > (screenWidth + 50) || y < -50 || y > (screenHeight + 50);
     }
+    public void setActive(boolean active) { this.active = active; }
+
+    public float getStateTime() { return stateTime; }
+    public void setStateTime(float stateTime) { this.stateTime = stateTime; }
+
 }

@@ -17,8 +17,8 @@ import com.ryoma.frontend.observers.GameObserver;
 import com.ryoma.frontend.systems.AssetManager;
 import com.ryoma.frontend.systems.BulletManager;
 import com.ryoma.frontend.systems.EntityFactory;
-import com.ryoma.frontend.observers.GameObserver;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Player extends GameObject {
@@ -28,7 +28,9 @@ public class Player extends GameObject {
     int power;
     int spellCards;
     private long score;
-    private List<GameObserver> observers;
+
+    // TODO: Deklarasikan atribut private List<GameObserver> observers dan inisialisasi dengan ArrayList kosong
+    private List<GameObserver> observers = new ArrayList<>();
 
     // Soal 4: Atribut tambahan untuk Command & Observer Pattern
     private int grazeCount = 0;
@@ -126,7 +128,7 @@ public class Player extends GameObject {
     // 4. notifySpellCardsChanged() -> memanggil obs.onSpellCardsChanged(spellCards)
     // 5. notifyPowerChanged()      -> memanggil obs.onPowerChanged(power)
     // 6. notifyGrazeChanged()      -> memanggil obs.onGrazeChanged(grazeCount)
-    private void notifyScoreChange(){
+    private void notifyScoreChanged(){
         for (GameObserver obs : observers) obs.onScoreChanged(score);
     }
     private void notifyHpChanged(){
@@ -192,6 +194,7 @@ public class Player extends GameObject {
             switch (type) {
                 case POWER:
                     this.power += type.getPowerBonus();
+                    notifyPowerChanged();
                     addScore(item.getScoreValue());
                     System.out.println(name + " collected POWER item! Power increased to " + power);
                     break;
@@ -201,12 +204,15 @@ public class Player extends GameObject {
                     break;
                 case BOMB:
                     this.spellCards += 1;
+                    notifySpellCardsChanged();
                     addScore(item.getScoreValue());
                     System.out.println(name + " collected BOMB item! SpellCards: " + spellCards);
                     break;
                 case LIFE:
                     this.lives++;
                     this.hp = 100;
+                    notifyLivesChanged();
+                    notifyHpChanged();
                     addScore(item.getScoreValue());
                     System.out.println(name + " collected LIFE item! Remaining Lives: " + lives);
                     break;
@@ -234,6 +240,7 @@ public class Player extends GameObject {
         if (this.hp < 0) {
             this.hp = 0;
         }
+        notifyHpChanged();
         System.out.println(name + " took " + damage + " damage! Remaining HP: " + this.hp);
         if (this.hp == 0) {
             System.out.println(name + " was defeated (Pichuun~)! ");
@@ -243,6 +250,7 @@ public class Player extends GameObject {
 
     public void loseLife(BulletManager bulletManager, List<GameObject> entities) {
         this.lives--;
+        notifyLivesChanged();
 
         if (bulletManager != null) {
             bulletManager.clearEnemyBullets();
@@ -262,9 +270,12 @@ public class Player extends GameObject {
         this.x = 200;
         this.y = 50;
         this.hp = 100;
+        notifyHpChanged();
         this.invulnerableTimer = 3.0f;
         this.power = Math.max(10, this.power - 16);
+        notifyPowerChanged();
         this.spellCards = 3;
+        notifySpellCardsChanged();
     }
 
     public void resetGame() {
@@ -278,11 +289,19 @@ public class Player extends GameObject {
         this.x = 200;
         this.y = 50;
         this.invulnerableTimer = 3.0f;
+
+        notifyLivesChanged();
+        notifyHpChanged();
+        notifyPowerChanged();
+        notifySpellCardsChanged();
+        notifyScoreChanged();
+        notifyGrazeChanged();
     }
 
     public void addScore(long points) {
         if (points > 0) {
             this.score += points;
+            notifyScoreChanged();
             System.out.println(getName() + " gained " + points + " pts! Total Score: " + this.score);
         }
     }
@@ -304,16 +323,28 @@ public class Player extends GameObject {
     }
 
     public int getLives() { return lives; }
-    public void setLives(int lives) { this.lives = lives; }
+    public void setLives(int lives) {
+        this.lives = lives;
+        notifyLivesChanged();
+    }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public int getHp() { return hp; }
-    public void setHp(int hp) { this.hp = Math.max(0, hp); }
+    public void setHp(int hp) {
+        this.hp = Math.max(0, hp);
+        notifyHpChanged();
+    }
     public int getPower() { return power; }
-    public void setPower(int power) { this.power = power; }
+    public void setPower(int power) {
+        this.power = power;
+        notifyPowerChanged();
+    }
     public int getSpellCards() { return spellCards; }
-    public void setSpellCards(int spellCards) { this.spellCards = spellCards; }
+    public void setSpellCards(int spellCards) {
+        this.spellCards = spellCards;
+        notifySpellCardsChanged();
+    }
     public long getScore() { return score; }
 
     @Override
@@ -344,6 +375,7 @@ public class Player extends GameObject {
     public void useBomb(BulletManager bulletManager, List<GameObject> entities) {
         if (spellCards > 0) {
             spellCards--;
+            notifySpellCardsChanged();
             invulnerableTimer = 5.0f;
             if (bulletManager != null) {
                 bulletManager.clearEnemyBullets(entities);
@@ -361,6 +393,7 @@ public class Player extends GameObject {
     // Soal 5: Metode untuk menambah Graze
     public void addGraze() {
         this.grazeCount++;
+        notifyGrazeChanged();
         addScore(50);
     }
 

@@ -1,10 +1,12 @@
 package com.ryoma.frontend.objects.enemies;
 
-import com.ryoma.frontend.objects.GameObject;
+import com.ryoma.frontend.objects.EntityShooter;
 import com.ryoma.frontend.objects.Player;
+import com.ryoma.frontend.objects.patterns.ShootingPattern;
+import com.ryoma.frontend.objects.patterns.entityStrategy.EntityMovementPattern;
 import com.badlogic.gdx.graphics.Color;
 
-public class Enemy extends GameObject {
+public class Enemy extends EntityShooter {
     String name;
     int hp;
     int maxHp;
@@ -21,6 +23,14 @@ public class Enemy extends GameObject {
 
     public Enemy(float x, float y, float width, float height, Color color, String name, int hp, long scoreValue) {
         super(x, y, width, height, 0, color);
+        this.name = name;
+        this.hp = hp;
+        this.maxHp = hp;
+        this.scoreValue = scoreValue;
+    }
+
+    public Enemy(float x, float y, float width, float height, Color color, String name, int hp, long scoreValue, ShootingPattern shootingPattern, EntityMovementPattern movementPattern) {
+        super(x, y, width, height, 0, color, shootingPattern, movementPattern);
         this.name = name;
         this.hp = hp;
         this.maxHp = hp;

@@ -6,6 +6,7 @@ import com.ryoma.frontend.objects.bullets.Bullet;
 import com.ryoma.frontend.objects.bullets.BulletType;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
+import com.ryoma.frontend.objects.patterns.bulletStrategy.HomingBulletMovement;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,6 +19,7 @@ public class BulletManager {
     private Queue<Bullet> enemyBulletPool;
     private List<Bullet> activePlayerBullets;
     private List<Bullet> activeEnemyBullets;
+    private List<GameObject> entities;
 
     public BulletManager() {
         playerBulletPool = new LinkedList<>();
@@ -26,31 +28,48 @@ public class BulletManager {
         activeEnemyBullets = new ArrayList<>();
     }
 
-    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage) {
+    // [UBAH] Perbarui method spawnPlayerBullet bawaan Modul 8 dengan perubahan berikut:
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage, String spriteKey) { // Tambahin String spriteKey sebagai parameter
+        String key = (spriteKey != null) ? spriteKey : "bullet_amulet"; // Tambahkan variabel String lokal key
         Bullet bullet;
         if (!playerBulletPool.isEmpty()) {
             bullet = playerBulletPool.poll();
             bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
+            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key)); // Tambahkan setSprite menggunakan key
         } else {
-            bullet = EntityFactory.createPlayerBullet(x, y, damage);
+            bullet = EntityFactory.createPlayerBullet(x, y, damage, key); // Tambahkan key sebagai argumen ke-4
             bullet.init(x, y, vx, vy, BulletType.AMULET, damage, true);
         }
         activePlayerBullets.add(bullet);
         return bullet;
     }
 
-    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage) {
+    // [TAMBAHAN] Tambahkan method overload 5 parameter berikut (mendelegasikan ke method 6 parameter di atas):
+    public Bullet spawnPlayerBullet(float x, float y, float vx, float vy, int damage) {
+        return spawnPlayerBullet(x, y, vx, vy, damage, "bullet_amulet");
+    }
+
+    // [UBAH] Perbarui method spawnEnemyBullet bawaan Modul 8 dengan perubahan berikut:
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage, String spriteKey) { // Tambahin String spriteKey sebagai parameter
+        String key = (spriteKey != null) ? spriteKey : "bullet_danmaku"; // Tambahkan variabel String lokal key
         Bullet bullet;
         if (!enemyBulletPool.isEmpty()) {
             bullet = enemyBulletPool.poll();
             bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
+            bullet.setSprite(AssetManager.getInstance().getTextureRegion(key)); // Tambahkan setSprite menggunakan key
         } else {
-            bullet = EntityFactory.createEnemyBullet(x, y, damage);
+            bullet = EntityFactory.createEnemyBullet(x, y, damage, key); // Tambahkan key sebagai argumen ke-4
             bullet.init(x, y, vx, vy, BulletType.DANMAKU, damage, false);
         }
         activeEnemyBullets.add(bullet);
         return bullet;
     }
+
+    // [TAMBAHAN] Tambahkan method overload 5 parameter berikut (mendelegasikan ke method 6 parameter di atas):
+    public Bullet spawnEnemyBullet(float x, float y, float vx, float vy, int damage) {
+        return spawnEnemyBullet(x, y, vx, vy, damage, "bullet_danmaku");
+    }
+
 
     public void update(float delta, float screenWidth, float screenHeight) {
         Iterator<Bullet> playerIter = activePlayerBullets.iterator();

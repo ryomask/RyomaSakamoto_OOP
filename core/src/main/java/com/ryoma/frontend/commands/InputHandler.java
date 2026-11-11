@@ -50,51 +50,51 @@ public class InputHandler {
         // - Simpan ke variabel boolean `isFocusHeld`.
         // - Tambahkan (add) ke activeCommands: jika isFocusHeld maka focusOn, jika tidak maka focusOff.
         boolean isFocusHeld = Gdx.input.isKeyPressed(keyFocus) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
-        activeCommands.add(isFocusHeld ? focusOn :focusOff);
+        activeCommands.add(isFocusHeld ? focusOn : focusOff);
 
         // 2. Pergerakan 8-Arah (WASD atau Arrow Keys) (5 poin)
         float dx = 0;
         float dy = 0;
         // TODO:
         // - Jika W atau UP ditekan (isKeyPressed), tambahkan dy sebesar 1
+        // - Jika S atau DOWN ditekan (isKeyPressed), kurangi dy sebesar 1
+        // - Jika A atau LEFT ditekan (isKeyPressed), kurangi dx sebesar 1
+        // - Jika D atau RIGHT ditekan (isKeyPressed), tambahkan dx sebesar 1
+        // - Hitung float speedMult = isFocusHeld ? 0.45f : 1.0f;
+        // - Perbarui perpindahan: moveCommand.set(dx * delta * speedMult, dy * delta * speedMult);
+        // - Tambahkan moveCommand ke dalam activeCommands.
         if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
             dy += 1f;
         }
-
-        // - Jika S atau DOWN ditekan (isKeyPressed), kurangi dy sebesar 1
         if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
             dy -= 1f;
         }
-        // - Jika A atau LEFT ditekan (isKeyPressed), kurangi dx sebesar 1
         if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             dx -= 1f;
         }
-        // - Jika D atau RIGHT ditekan (isKeyPressed), tambahkan dx sebesar 1
         if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             dx += 1f;
         }
-        // - Hitung float speedMult = isFocusHeld ? 0.45f : 1.0f;
-
         float speedMult = isFocusHeld ? 0.45f : 1.0f;
-        // - Perbarui perpindahan: moveCommand.set(dx * delta * speedMult, dy * delta * speedMult);
         moveCommand.set(dx * delta * speedMult, dy * delta * speedMult);
-        // - Tambahkan moveCommand ke dalam activeCommands.
         activeCommands.add(moveCommand);
 
-            // 3. Shoot Command (Tahan tombol untuk tembakan beruntun) (3 poin)
-            // TODO:
-            // - Cek apakah keyShoot sedang ditekan (isKeyPressed).
-            // - Jika YA: tambahkan shootCommand ke dalam activeCommands.
+        // 3. Shoot Command (Tahan tombol untuk tembakan beruntun) (3 poin)
+        // TODO:
+        // - Cek apakah keyShoot sedang ditekan (isKeyPressed).
+        // - Jika YA: tambahkan shootCommand ke dalam activeCommands.
         if (Gdx.input.isKeyPressed(keyShoot)) {
             activeCommands.add(shootCommand);
         }
-            // 4. Bomb / Spell Card Command (Sekali tekan) (3 poin)
-            // TODO:
-            // - Cek apakah keyBomb baru saja ditekan (isKeyJustPressed).
-            // - Jika YA: tambahkan bombCommand ke dalam activeCommands.
+
+        // 4. Bomb / Spell Card Command (Sekali tekan) (3 poin)
+        // TODO:
+        // - Cek apakah keyBomb baru saja ditekan (isKeyJustPressed).
+        // - Jika YA: tambahkan bombCommand ke dalam activeCommands.
         if (Gdx.input.isKeyJustPressed(keyBomb)) {
             activeCommands.add(bombCommand);
         }
-            return activeCommands;
+
+        return activeCommands;
     }
 }

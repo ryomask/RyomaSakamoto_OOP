@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.ryoma.frontend.objects.Collidable;
 import com.ryoma.frontend.objects.GameObject;
 import com.ryoma.frontend.objects.enemies.Enemy;
+import com.ryoma.frontend.objects.patterns.bulletStrategy.BulletMovementPattern;
 
 public class Bullet extends GameObject {
     private BulletType bulletType;
@@ -13,6 +14,9 @@ public class Bullet extends GameObject {
     private float angle = 90f;
     private boolean isPlayerBullet;
     private boolean grazed = false;
+
+    // Atribut strategi trajektori peluru (Modul 9)
+    private BulletMovementPattern movementPattern;
 
     public Bullet(float x, float y, BulletType bulletType, int damage) {
         super(x, y, 16, 16, 400f, Color.YELLOW);
@@ -23,6 +27,7 @@ public class Bullet extends GameObject {
         this.angle = 90f;
         this.isPlayerBullet = true;
         this.grazed = false;
+        this.movementPattern = null;
     }
 
     public Bullet(float x, float y, float speed, BulletType bulletType, int damage) {
@@ -34,6 +39,7 @@ public class Bullet extends GameObject {
         this.angle = (speed < 0) ? 270f : 90f;
         this.isPlayerBullet = true;
         this.grazed = false;
+        this.movementPattern = null;
     }
 
     public void init(float x, float y, float vx, float vy, BulletType bulletType, int damage, boolean isPlayerBullet) {
@@ -49,13 +55,20 @@ public class Bullet extends GameObject {
         this.active = true;
         this.stateTime = 0f;
         this.grazed = false;
+        // Reset movementPattern saat peluru didaur ulang oleh Object Pool
+        this.movementPattern = null;
     }
 
     @Override
     public void update(float delta) {
         super.update(delta);
-        this.x += vx * delta;
-        this.y += vy * delta;
+        // TODO (6 poin): Delegasikan pergerakan ke movementPattern jika ada
+        if (movementPattern != null) {
+            movementPattern.move(this, delta);
+        } else {
+            this.x += vx * delta;
+            this.y += vy * delta;
+        }
     }
 
     @Override
@@ -87,4 +100,8 @@ public class Bullet extends GameObject {
     public void setAngle(float angle) { this.angle = angle; }
     public boolean hasBeenGrazed() { return grazed; }
     public void setGrazed(boolean grazed) { this.grazed = grazed; }
+
+    // Getter & Setter untuk strategi trajektori peluru (Modul 9)
+    public BulletMovementPattern getMovementPattern() { return movementPattern; }
+    public void setMovementPattern(BulletMovementPattern movementPattern) { this.movementPattern = movementPattern; }
 }

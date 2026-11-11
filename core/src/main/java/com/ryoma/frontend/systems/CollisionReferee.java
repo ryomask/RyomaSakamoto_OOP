@@ -35,21 +35,34 @@ public class CollisionReferee {
             }
         }
 
+        // 2. Mediator checks Enemy Bullets vs Player (Core Hitbox vs Graze Hitbox)
         for (Bullet bullet : bulletManager.getActiveEnemyBullets()) {
             if (bullet.isDestroyed()) continue;
 
             if (player.isAlive() && !player.isDestroyed()) {
+                // Priority A: Direct Core Hitbox Collision (Damage & Life Loss)
                 if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {
-                    player.takeDamage(bullet.getDamage());
-                    bullet.destroy();
-                } else if (!bullet.hasBeenGrazed() && bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
+                    // TODO 1: Bungkus isi blok ini dengan pengecekan `if (!player.isInvulnerable())`,
+                    if (!player.isInvulnerable()) {
+                        System.out.println("[CollisionReferee] CORE HIT! Enemy Bullet hit " + player.getName() + " for " + bullet.getDamage() + " DMG!");
+                        // TODO 2: Ganti `player.takeDamage(bullet.getDamage())` menjadi `player.takeDamage(100, bulletManager, entities)`
+                        player.takeDamage(100, bulletManager, entities);
+                        bullet.destroy(); // Mark bullet for recycling by BulletManager
+                        // TODO 3: Tambahkan `break` di akhir!
+                        break;
+                    }
+                }
+                // Priority B: Graze Hitbox Collision (Passes close to player without hitting core)
+                else if (!bullet.hasBeenGrazed() && bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
                     bullet.setGrazed(true);
-                    player.addScore(50);
-                    System.out.println("[CollisionReferee] GRAZE! Reimu Hakurei grazed an enemy bullet (+50 pts)!");
+                    // TODO 4: Ganti player.addScore(50) menjadi pemanggilan metode addGraze() milik player
+                    player.addGraze();
+                    System.out.println("[CollisionReferee] GRAZE! " + player.getName() + " grazed an enemy bullet (+50 pts)!");
                 }
             }
         }
 
+        // 3. Mediator checks Player vs Items and Enemies (Core vs Graze)
         for (GameObject entity : entities) {
             if (entity.isDestroyed()) continue;
 
@@ -64,7 +77,12 @@ public class CollisionReferee {
 
             if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
                 if (player.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
-                    player.takeDamage(10);
+                    // TODO 5: Bungkus isi blok ini dengan `if (!player.isInvulnerable())`
+                    if (!player.isInvulnerable()) {
+                        System.out.println("[CollisionReferee] CORE COLLISION! Player collided with " + enemy.getName() + "!");
+                        // TODO 6: ganti `player.takeDamage(10)` menjadi `player.takeDamage(100, bulletManager, entities)`
+                        player.takeDamage(100, bulletManager, entities);
+                    }
                 }
             }
         }

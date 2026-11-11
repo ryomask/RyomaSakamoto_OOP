@@ -74,4 +74,19 @@ public class EntityFactory {
     public static Bullet createPlayerBullet(float x, float y, int damage) {
         return createPlayerBullet(x, y, damage, "bullet_amulet");
     }
+
+    // [UBAH] Perbarui method createEnemyBullet bawaan Modul 8 dengan perubahan berikut:
+    public static Bullet createEnemyBullet(float x, float y, int damage, String spriteKey) { // Tambahin String spriteKey sebagai parameter
+        String key = (spriteKey != null) ? spriteKey : "bullet_danmaku"; // Tambahkan variabel String lokal key
+        TextureRegion sprite = AssetManager.getInstance().getTextureRegion(key); // Ganti "bullet_danmaku" menjadi key tadi
+        Bullet bullet = new Bullet(x, y, 0f, BulletType.DANMAKU, damage);
+        bullet.setSprite(sprite);
+        return bullet;
+    }
+
+    // [TAMBAHAN] Tambahkan method overload 3 parameter berikut (mendelegasikan ke method 4 parameter di atas):
+    public static Bullet createEnemyBullet(float x, float y, int damage) {
+        return createEnemyBullet(x, y, damage, "bullet_danmaku");
+    }
+
 }
