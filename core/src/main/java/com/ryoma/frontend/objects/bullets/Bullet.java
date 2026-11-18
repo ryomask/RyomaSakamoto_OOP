@@ -2,6 +2,7 @@ package com.ryoma.frontend.objects.bullets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.ryoma.frontend.objects.Collidable;
 import com.ryoma.frontend.objects.GameObject;
 import com.ryoma.frontend.objects.enemies.Enemy;
@@ -14,6 +15,16 @@ public class Bullet extends GameObject {
     private float angle = 90f;
     private boolean isPlayerBullet;
     private boolean grazed = false;
+
+    private static final float PLAYER_SHOT_HITBOX = 12f;
+
+    public Rectangle getShotHitbox() {
+        if (!isPlayerBullet) {
+            return getCoreHitbox();
+        }
+        return new Rectangle(x + (width - PLAYER_SHOT_HITBOX) / 2f, y + (height - PLAYER_SHOT_HITBOX) / 2f,
+            PLAYER_SHOT_HITBOX, PLAYER_SHOT_HITBOX);
+    }
 
     // Atribut strategi trajektori peluru (Modul 9)
     private BulletMovementPattern movementPattern;

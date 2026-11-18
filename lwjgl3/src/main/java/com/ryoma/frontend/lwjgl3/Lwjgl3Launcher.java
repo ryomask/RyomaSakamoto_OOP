@@ -21,7 +21,7 @@ public class Lwjgl3Launcher {
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
 
         // TODO: Ubah ukuran windowed mode menjadi lebar 800 dan tinggi 600
-        configuration.setWindowedMode(800, 600);
+        configuration.setWindowedMode(640, 480);
 
         configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
         return configuration;

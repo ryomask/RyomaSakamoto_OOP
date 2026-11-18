@@ -52,6 +52,7 @@ public abstract class GameObject implements Collidable {
     public Rectangle getCoreHitbox() { return new Rectangle(x, y, width, height); }
 
     @Override
+    // [PERBAIKAN] Menggabungkan operator pengurangan dan penjumlahan pada hitbox graze
     public Rectangle getGrazeHitbox() { return new Rectangle(x - 10, y - 10, width + 20, height + 20); }
 
     @Override

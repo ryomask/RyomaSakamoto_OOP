@@ -1,23 +1,28 @@
 package com.ryoma.frontend.objects.enemies;
 
 import com.badlogic.gdx.graphics.Color;
-import com.ryoma.frontend.objects.Collidable;
-import com.ryoma.frontend.objects.Player;
-import com.ryoma.frontend.objects.items.Item;
-import com.ryoma.frontend.objects.patterns.entityStrategy.LinearEntityMovement;
 import com.ryoma.frontend.objects.patterns.shootingStrategy.FrontShot;
+import com.ryoma.frontend.objects.patterns.entityStrategy.LinearEntityMovement;
 
 public class Fairy extends Enemy {
+    private float shootTimer = 0f;
+    private float shootDelay = 0.67f; // ZUN EoSD tick 40: 0.67s entry delay before first shot
+    private float shootInterval = 1.4f; // Subsequent shot interval
+    private int maxShots = 2; // Stream fairies fire 1-2 shots before exiting
+    private int shotsFired = 0;
+
     public Fairy(String name, int hp) {
         super(150, 380, 24, 24, Color.PINK, name, hp, 500L);
         setShootingPattern(new FrontShot(150f, 10));
         setMovementPattern(new LinearEntityMovement(0f, -40f));
+        setShotHitboxSize(28f, 28f);
     }
 
     public Fairy(float x, float y, String name, int hp) {
         super(x, y, 24, 24, Color.PINK, name, hp, 500L);
         setShootingPattern(new FrontShot(150f, 10));
         setMovementPattern(new LinearEntityMovement(0f, -40f));
+        setShotHitboxSize(28f, 28f);
     }
 
     public Fairy(float x, float y, String name, int hp, float shootDelay, float shootInterval, int maxShots) {
@@ -25,9 +30,15 @@ public class Fairy extends Enemy {
         this.shootDelay = shootDelay;
         this.shootInterval = shootInterval;
         this.maxShots = maxShots;
-        // TODO (2 poin): Suntikkan strategi bawaan FrontShot dan LinearEntityMovement
         setShootingPattern(new FrontShot(150f, 10));
         setMovementPattern(new LinearEntityMovement(0f, -40f));
+        setShotHitboxSize(28f, 28f);
+    }
+
+    public Fairy(float x, float y, String name, int hp, String defaultSpriteKey) {
+        super(x, y, 32f, 32f, Color.PURPLE, name, hp, 100L);
+        this.spriteKey = defaultSpriteKey;
+        setShotHitboxSize(28f, 28f);
     }
 
     public boolean canShoot(float delta) {
@@ -59,14 +70,4 @@ public class Fairy extends Enemy {
     public float getShootDelay() { return shootDelay; }
     public float getShootInterval() { return shootInterval; }
     public int getMaxShots() { return maxShots; }
-
-    @Override
-    public void onCollision(Collidable other) {
-        if (other instanceof Player) {
-            if (collisionCooldown <= 0) {
-                System.out.println("Player touches fairy");
-                collisionCooldown = 1.0f;
-            }
-        }
-    }
 }

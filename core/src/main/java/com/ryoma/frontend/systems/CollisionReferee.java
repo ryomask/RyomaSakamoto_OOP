@@ -6,10 +6,13 @@ import com.ryoma.frontend.objects.bullets.Bullet;
 import com.ryoma.frontend.objects.enemies.Enemy;
 import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class CollisionReferee {
+    private int defeatCounter = 0;
+    private int itemDropCount = 0;
 
     public void resolveCollisions(Player player, List<GameObject> entities, BulletManager bulletManager) {
         if (player == null || entities == null || bulletManager == null) return;
@@ -21,13 +24,44 @@ public class CollisionReferee {
 
             for (GameObject entity : entities) {
                 if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
-                    if (bullet.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
-                        boolean defeated = enemy.takeDamage(bullet.getDamage());
-                        if (defeated) {
-                            player.addScore(enemy.getScoreValue());
-                            Item dropPower = EntityFactory.createPowerItem(enemy.getX(), enemy.getY());
-                            newDrops.add(dropPower);
+                    if (bullet.getShotHitbox().overlaps(enemy.getShotHitbox())) {
+                        System.out.println("[CollisionReferee] Player Bullet hit " + enemy.getName() + " for " + bullet.getDamage() + " DMG!");
+
+                        if (enemy.isDamageable()) {
+                            boolean defeated = enemy.takeDamage(bullet.getDamage());
+
+                            if (defeated) {
+                                player.addScore(enemy.getScoreValue());
+
+                                ItemType dropType = null;
+
+                                if (enemy.getItemDrop() != null) {
+                                    dropType = enemy.getItemDrop();
+                                } else if (defeatCounter++ % 3 == 0) {
+                                    dropType = (itemDropCount++ % 2 == 0)
+                                        ? ItemType.POWER
+                                        : ItemType.POINT;
+                                }
+
+                                if (dropType != null) {
+                                    Item drop = EntityFactory.createItem(
+                                        enemy.getX(),
+                                        enemy.getY(),
+                                        dropType
+                                    );
+
+                                    newDrops.add(drop);
+
+                                    System.out.println(
+                                        "[CollisionReferee] Defeated " + enemy.getName()
+                                            + "! Dropped " + dropType
+                                            + " item at (" + enemy.getX()
+                                            + ", " + enemy.getY() + ")"
+                                    );
+                                }
+                            }
                         }
+
                         bullet.destroy();
                         break;
                     }
@@ -35,52 +69,44 @@ public class CollisionReferee {
             }
         }
 
-        // 2. Mediator checks Enemy Bullets vs Player (Core Hitbox vs Graze Hitbox)
         for (Bullet bullet : bulletManager.getActiveEnemyBullets()) {
             if (bullet.isDestroyed()) continue;
 
-            if (player.isAlive() && !player.isDestroyed()) {
-                // Priority A: Direct Core Hitbox Collision (Damage & Life Loss)
-                if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {
-                    // TODO 1: Bungkus isi blok ini dengan pengecekan `if (!player.isInvulnerable())`,
-                    if (!player.isInvulnerable()) {
-                        System.out.println("[CollisionReferee] CORE HIT! Enemy Bullet hit " + player.getName() + " for " + bullet.getDamage() + " DMG!");
-                        // TODO 2: Ganti `player.takeDamage(bullet.getDamage())` menjadi `player.takeDamage(100, bulletManager, entities)`
-                        player.takeDamage(100, bulletManager, entities);
-                        bullet.destroy(); // Mark bullet for recycling by BulletManager
-                        // TODO 3: Tambahkan `break` di akhir!
-                        break;
-                    }
+            if (bullet.getCoreHitbox().overlaps(player.getCoreHitbox())) {
+                if (!player.isInvulnerable()) {
+                    System.out.println("[CollisionReferee] Enemy Bullet hit " + player.getName() + "!");
+                    player.takeDamage(100, bulletManager, entities);
+                    break;
                 }
-                // Priority B: Graze Hitbox Collision (Passes close to player without hitting core)
-                else if (!bullet.hasBeenGrazed() && bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
-                    bullet.setGrazed(true);
-                    // TODO 4: Ganti player.addScore(50) menjadi pemanggilan metode addGraze() milik player
-                    player.addGraze();
-                    System.out.println("[CollisionReferee] GRAZE! " + player.getName() + " grazed an enemy bullet (+50 pts)!");
-                }
+            } else if (!bullet.hasBeenGrazed()
+                && bullet.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
+                bullet.setGrazed(true);
+                player.addGraze();
+
+                System.out.println(
+                    "[CollisionReferee] GRAZE! " + player.getName()
+                        + " grazed an enemy bullet (+50 pts)!"
+                );
             }
         }
 
-        // 3. Mediator checks Player vs Items and Enemies (Core vs Graze)
         for (GameObject entity : entities) {
             if (entity.isDestroyed()) continue;
 
             if (entity instanceof Item item) {
-                if (!item.isCollected()) {
-                    if (item.getCoreHitbox().overlaps(player.getCoreHitbox()) || item.getCoreHitbox().overlaps(player.getGrazeHitbox())) {
-                        player.collectItem(item);
-                        item.setCollected(true);
-                    }
+                if (player.getCoreHitbox().overlaps(item.getCoreHitbox())
+                    || player.getGrazeHitbox().overlaps(item.getCoreHitbox())) {
+                    System.out.println("[CollisionReferee] Player collected item: " + item.getItemType());
+                    player.collectItem(item);
                 }
-            }
-
-            if (entity instanceof Enemy enemy && !enemy.isDestroyed()) {
+            } else if (entity instanceof Enemy enemy && enemy.isCollidable()) {
                 if (player.getCoreHitbox().overlaps(enemy.getCoreHitbox())) {
-                    // TODO 5: Bungkus isi blok ini dengan `if (!player.isInvulnerable())`
                     if (!player.isInvulnerable()) {
-                        System.out.println("[CollisionReferee] CORE COLLISION! Player collided with " + enemy.getName() + "!");
-                        // TODO 6: ganti `player.takeDamage(10)` menjadi `player.takeDamage(100, bulletManager, entities)`
+                        System.out.println(
+                            "[CollisionReferee] CORE COLLISION! Player collided with "
+                                + enemy.getName() + "!"
+                        );
+
                         player.takeDamage(100, bulletManager, entities);
                     }
                 }

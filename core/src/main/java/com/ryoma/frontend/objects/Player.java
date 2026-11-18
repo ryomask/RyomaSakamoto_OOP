@@ -1,7 +1,5 @@
 package com.ryoma.frontend.objects;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +11,9 @@ import com.ryoma.frontend.objects.items.Item;
 import com.ryoma.frontend.objects.items.ItemType;
 import com.ryoma.frontend.objects.bullets.Bullet;
 import com.ryoma.frontend.objects.patterns.ShootingPattern;
+import com.ryoma.frontend.objects.patterns.shootingStrategy.*;
+import com.ryoma.frontend.objects.patterns.bulletStrategy.HomingBulletMovement;
+import com.ryoma.frontend.objects.patterns.entityStrategy.FixedMovement;
 import com.ryoma.frontend.observers.GameObserver;
 import com.ryoma.frontend.systems.AssetManager;
 import com.ryoma.frontend.systems.BulletManager;
@@ -21,7 +22,7 @@ import com.ryoma.frontend.systems.EntityFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player extends GameObject {
+public class Player extends EntityShooter {
     String name;
     int hp;
     private int lives = 3;
@@ -29,42 +30,52 @@ public class Player extends GameObject {
     int spellCards;
     private long score;
 
-    // TODO: Deklarasikan atribut private List<GameObserver> observers dan inisialisasi dengan ArrayList kosong
     private List<GameObserver> observers = new ArrayList<>();
 
-    // Soal 4: Atribut tambahan untuk Command & Observer Pattern
     private int grazeCount = 0;
     private boolean focused = false;
-    private float shootTimer = 0.1f;
-    private float shootCooldown = 0.1f;
+    private float shootCooldown = 5f / 60f;
+    private float shootTimer = shootCooldown;
+    private float homingCooldown = 30f / 60f;
+    private float homingShootTimer = homingCooldown;
     private float invulnerableTimer = 0f;
 
     private int currentDir = 0;
-    private ShootingPattern shootingPattern;
+    private ShootingPattern mainShootingPattern;
+    private ShootingPattern sideShootingPattern;
 
     public Player(String name, int hp, int power, int spellCards) {
-        super(200, 50, 32, 48, 200, Color.RED);
+        super(200, 50, 32, 48, 240f, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
         this.spellCards = spellCards;
         this.score = 0;
+        setMovementPattern(new FixedMovement());
+        updatePowerStrategy();
     }
 
     public Player(float x, float y, String name, int hp, int power, int spellCards) {
-        super(x, y, 32, 48, 200, Color.RED);
+        super(x, y, 32, 48, 240f, Color.RED);
         this.name = name;
         this.hp = hp;
         this.power = power;
         this.spellCards = spellCards;
         this.score = 0;
+        setMovementPattern(new FixedMovement());
+        updatePowerStrategy();
     }
 
-    // Soal 5: Membersihkan Gdx.input dari update() dan menambahkan shootTimer
     @Override
     public void update(float delta) {
         super.update(delta);
         shootTimer += delta;
+        homingShootTimer += delta;
+
+        if (shootTimer > 0.15f) {
+            shootTimer = shootCooldown;
+            homingShootTimer = homingCooldown;
+        }
 
         if (invulnerableTimer > 0f) {
             invulnerableTimer -= delta;
@@ -72,8 +83,8 @@ public class Player extends GameObject {
         }
     }
 
-    // Soal 5: Metode pergerakan dan pembatasan area bermain (Playfield Clamping)
     public void move(float dx, float dy) {
+        // [PERBAIKAN] Menggabungkan operator perkalian kecepatan fokus
         float currentSpeed = focused ? speed * 0.5f : speed;
         this.x += dx * currentSpeed;
         this.y += dy * currentSpeed;
@@ -84,26 +95,13 @@ public class Player extends GameObject {
         float minX = 32;
         float maxX = 416 - width;
         float minY = 16;
-        float maxY = 560 - height;
+        float maxY = 464 - height;
 
-        if (this.x < minX) this.x = minX;
-        if (this.x > maxX) this.x = maxX;
-        if (this.y < minY) this.y = minY;
-        if (this.y > maxY) this.y = maxY;
+        x = Math.max(minX, Math.min(x, maxX));
+        y = Math.max(minY, Math.min(y, maxY));
     }
 
     public void registerObserver(GameObserver observer) {
-        // TODO:
-        // 1. Cek apakah observer tidak null DAN belum ada di dalam list observers (!observers.contains(observer)).
-        // 2. Jika memenuhi syarat:
-        //    - Tambahkan observer ke dalam list observers.
-        //    - Pancarkan seluruh state awal pemain saat ini ke observer tersebut:
-        //      * observer.onScoreChanged(score);
-        //      * observer.onHpChanged(hp);
-        //      * observer.onLivesChanged(lives);
-        //      * observer.onSpellCardsChanged(spellCards);
-        //      * observer.onPowerChanged(power);
-        //      * observer.onGrazeChanged(grazeCount);
         if (observer != null && !observers.contains(observer)) {
             observers.add(observer);
             observer.onScoreChanged(score);
@@ -119,15 +117,6 @@ public class Player extends GameObject {
         observers.remove(observer);
     }
 
-    // Metode Pemancar Notifikasi ke Seluruh Observer (4 poin)
-    // TODO: Buat 6 metode private void berikut yang MELAKUKAN LOOP KE SELURUH ELEMEN DI 'observers'
-    //       dan memanggil metode callback yang bersesuaian:
-    // 1. notifyScoreChanged()      -> memanggil obs.onScoreChanged(score)
-    // 2. notifyHpChanged()         -> memanggil obs.onHpChanged(hp)
-    // 3. notifyLivesChanged()      -> memanggil obs.onLivesChanged(lives) (Sistem Nyawa Touhou)
-    // 4. notifySpellCardsChanged() -> memanggil obs.onSpellCardsChanged(spellCards)
-    // 5. notifyPowerChanged()      -> memanggil obs.onPowerChanged(power)
-    // 6. notifyGrazeChanged()      -> memanggil obs.onGrazeChanged(grazeCount)
     private void notifyScoreChanged(){
         for (GameObserver obs : observers) obs.onScoreChanged(score);
     }
@@ -176,12 +165,65 @@ public class Player extends GameObject {
         }
     }
 
-    public void shoot(Enemy target) {
-        int damage = 10 + getPower();
-        System.out.println(getName() + " shoots " + target.getName() + " dealing " + damage + " DMG!");
-        boolean defeated = target.takeDamage(damage);
-        if (defeated) {
-            addScore(target.getScoreValue());
+    public void updatePowerStrategy() {
+        float spreadAngle = focused ? 4f : 18f;
+        float dualSpreadAngle = focused ? 3f : 12f;
+        float sideHOffset = focused ? 8f : 24f;
+        float sideVOffset = focused ? 16f : -16f;
+        float leftAngle = focused ? 100f : 120f;
+        float rightAngle = focused ? 80f : 60f;
+
+        float normalSpeed = 720f;
+        float homingSpeed = 500f;
+
+        if (power < 8) {
+            mainShootingPattern = new FrontShot(normalSpeed, 48);
+            sideShootingPattern = null;
+            homingCooldown = 30f / 60f;
+        } else if (power < 16) {
+            mainShootingPattern = new FrontShot(normalSpeed, 48);
+            sideShootingPattern = new SideShot(homingSpeed, 14, sideHOffset, sideVOffset, leftAngle, rightAngle, true, new HomingBulletMovement(360f), "bullet_amulet_homing");
+            homingCooldown = 30f / 60f;
+        } else if (power < 32) {
+            mainShootingPattern = new SpreadShot(normalSpeed, 2, dualSpreadAngle, 30, 8f, null, null, null);
+            sideShootingPattern = new SideShot(homingSpeed, 14, sideHOffset, sideVOffset, leftAngle, rightAngle, true, new HomingBulletMovement(360f), "bullet_amulet_homing");
+            homingCooldown = 30f / 60f;
+        } else if (power < 48) {
+            mainShootingPattern = new SpreadShot(normalSpeed, 3, spreadAngle, 26);
+            sideShootingPattern = new SideShot(homingSpeed, 14, sideHOffset, sideVOffset, leftAngle, rightAngle, true, new HomingBulletMovement(360f), "bullet_amulet_homing");
+            homingCooldown = 30f / 60f;
+        } else if (power < 64) {
+            mainShootingPattern = new SpreadShot(normalSpeed, 3, spreadAngle, 26);
+            sideShootingPattern = new SideShot(homingSpeed, 12, sideHOffset, sideVOffset, leftAngle, rightAngle, true, new HomingBulletMovement(360f), "bullet_amulet_homing");
+            homingCooldown = 15f / 60f;
+        } else if (power < 80) {
+            mainShootingPattern = new SpreadShot(normalSpeed, 3, spreadAngle, 26);
+            sideShootingPattern = new CompositeShootingPattern(
+                new SideShot(homingSpeed, 9, sideHOffset, sideVOffset, leftAngle, rightAngle, true, new HomingBulletMovement(360f), "bullet_amulet_homing"),
+                new SideShot(homingSpeed, 12, sideHOffset + 4f, sideVOffset, leftAngle + 30f, rightAngle - 30f, true, new HomingBulletMovement(360f), "bullet_amulet_homing")
+            );
+            homingCooldown = 15f / 60f;
+        } else if (power < 128) {
+            mainShootingPattern = new SpreadShot(normalSpeed, 3, spreadAngle, 26);
+            sideShootingPattern = new CompositeShootingPattern(
+                new SideShot(homingSpeed, 8, sideHOffset, sideVOffset, leftAngle - 10f, rightAngle + 10f, true, new HomingBulletMovement(360f), "bullet_amulet_homing"),
+                new SideShot(homingSpeed, 8, sideHOffset + 4f, sideVOffset, leftAngle + 10f, rightAngle - 10f, true, new HomingBulletMovement(360f), "bullet_amulet_homing")
+            );
+            homingCooldown = 15f / 60f;
+        } else {
+            mainShootingPattern = new SpreadShot(normalSpeed, 4, spreadAngle * 1.2f, 24, 16f, null, null, null);
+            sideShootingPattern = new CompositeShootingPattern(
+                new SideShot(homingSpeed, 8, sideHOffset, sideVOffset, leftAngle - 10f, rightAngle + 10f, true, new HomingBulletMovement(360f), "bullet_amulet_homing"),
+                new SideShot(homingSpeed, 8, sideHOffset + 4f, sideVOffset, leftAngle + 10f, rightAngle - 10f, true, new HomingBulletMovement(360f), "bullet_amulet_homing"),
+                new SideShot(homingSpeed, 8, sideHOffset + 8f, sideVOffset, leftAngle + 30f, rightAngle - 30f, true, new HomingBulletMovement(360f), "bullet_amulet_homing")
+            );
+            homingCooldown = 15f / 60f;
+        }
+
+        if (sideShootingPattern != null) {
+            setShootingPattern(new CompositeShootingPattern(mainShootingPattern, sideShootingPattern));
+        } else {
+            setShootingPattern(mainShootingPattern);
         }
     }
 
@@ -194,6 +236,7 @@ public class Player extends GameObject {
             switch (type) {
                 case POWER:
                     this.power += type.getPowerBonus();
+                    updatePowerStrategy();
                     notifyPowerChanged();
                     addScore(item.getScoreValue());
                     System.out.println(name + " collected POWER item! Power increased to " + power);
@@ -272,7 +315,9 @@ public class Player extends GameObject {
         this.hp = 100;
         notifyHpChanged();
         this.invulnerableTimer = 3.0f;
+        // [PERBAIKAN] Menggabungkan operator pengurangan power saat respawn
         this.power = Math.max(10, this.power - 16);
+        updatePowerStrategy();
         notifyPowerChanged();
         this.spellCards = 3;
         notifySpellCardsChanged();
@@ -289,6 +334,7 @@ public class Player extends GameObject {
         this.x = 200;
         this.y = 50;
         this.invulnerableTimer = 3.0f;
+        updatePowerStrategy();
 
         notifyLivesChanged();
         notifyHpChanged();
@@ -338,6 +384,7 @@ public class Player extends GameObject {
     public int getPower() { return power; }
     public void setPower(int power) {
         this.power = power;
+        updatePowerStrategy();
         notifyPowerChanged();
     }
     public int getSpellCards() { return spellCards; }
@@ -357,21 +404,31 @@ public class Player extends GameObject {
         return new Rectangle(x, y, width, height);
     }
 
-    // Soal 5: Update shootBullet dengan Cooldown Timer dan ShootingPattern
+    @Override
     public void shootBullet(BulletManager bulletManager) {
         if (bulletManager == null) return;
 
         if (shootTimer >= shootCooldown) {
-            if (shootingPattern != null) {
+            if (mainShootingPattern != null) {
+                // [PERBAIKAN] Menggabungkan operator pengurangan posisi X peluru utama
+                mainShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+            } else if (shootingPattern != null) {
+                // [PERBAIKAN] Menggabungkan operator pengurangan posisi X peluru fallback
                 shootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
             } else {
+                // [PERBAIKAN] Menggabungkan operator pengurangan posisi X peluru default
                 bulletManager.spawnPlayerBullet(x + width / 2f - 8f, y + height, 0f, 400f, 10 + power);
             }
             shootTimer = 0f;
         }
+
+        if (sideShootingPattern != null && homingShootTimer >= homingCooldown) {
+            // [PERBAIKAN] Menggabungkan operator pengurangan posisi X peluru samping (side shooting)
+            sideShootingPattern.execute(x + width / 2f - 8f, y + height, bulletManager, true);
+            homingShootTimer = 0f;
+        }
     }
 
-    // Soal 5: Metode penggunaan Spell Card (Bomb)
     public void useBomb(BulletManager bulletManager, List<GameObject> entities) {
         if (spellCards > 0) {
             spellCards--;
@@ -379,8 +436,20 @@ public class Player extends GameObject {
             invulnerableTimer = 5.0f;
             if (bulletManager != null) {
                 bulletManager.clearEnemyBullets(entities);
+
+                GameObject target = null;
+                if (entities != null) {
+                    for (GameObject obj : entities) {
+                        if (obj instanceof Enemy enemy && !enemy.isDestroyed()) {
+                            target = enemy;
+                            break;
+                        }
+                    }
+                }
+
+                bulletManager.spawnBombOrbs(x + width / 2f, y + height / 2f, target, entities);
             }
-            System.out.println(name + " unleashes SPELL CARD (Fantasy Seal)! All enemy bullets cleared!");
+            System.out.println(name + " unleashes SPELL CARD (Fantasy Seal)! All enemy bullets cleared & 8 homing orbs launched!");
         } else {
             System.out.println("No Spell Cards (Bombs) remaining!");
         }
@@ -390,15 +459,16 @@ public class Player extends GameObject {
         useBomb(bulletManager, null);
     }
 
-    // Soal 5: Metode untuk menambah Graze
     public void addGraze() {
         this.grazeCount++;
         notifyGrazeChanged();
         addScore(50);
     }
 
-    public ShootingPattern getShootingPattern() { return shootingPattern; }
-    public void setShootingPattern(ShootingPattern shootingPattern) { this.shootingPattern = shootingPattern; }
+    public ShootingPattern getMainShootingPattern() { return mainShootingPattern; }
+    public ShootingPattern getSideShootingPattern() { return sideShootingPattern; }
+    public float getShootCooldown() { return shootCooldown; }
+    public float getHomingCooldown() { return homingCooldown; }
 
     @Override
     public void onCollision(Collidable other) {
@@ -421,11 +491,11 @@ public class Player extends GameObject {
         return EntityFactory.createPlayerBullet(this.x + (this.width / 2f) - 8f, this.y + this.height, damage);
     }
 
-    // Soal 6: Render visual Focus Mode & kedip saat invulnerable
     @Override
     public void render(SpriteBatch batch) {
         if (batch != null && active && !isDestroyed()) {
             if (invulnerableTimer > 0f) {
+                // [PERBAIKAN] Menggabungkan operator modulus (sisa bagi) untuk efek kedip invulnerabilitas
                 boolean visible = ((int) (invulnerableTimer * 16)) % 2 == 0;
                 if (!visible) return;
             }
@@ -440,7 +510,6 @@ public class Player extends GameObject {
         }
     }
 
-    // Soal 6: Indikator Core Hitbox saat Focus Mode (Shift) aktif
     public void renderFocusIndicator(ShapeRenderer shapeRenderer) {
         if (focused && shapeRenderer != null && active) {
             Rectangle core = getCoreHitbox();
@@ -454,6 +523,11 @@ public class Player extends GameObject {
     }
 
     public boolean isFocused() { return focused; }
-    public void setFocused(boolean focused) { this.focused = focused; }
+    public void setFocused(boolean focused) {
+        if (this.focused != focused) {
+            this.focused = focused;
+            updatePowerStrategy();
+        }
+    }
     public int getGrazeCount() { return grazeCount; }
 }
